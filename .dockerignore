@@ -1,0 +1,11 @@
+target/
+.git/
+.gitignore
+*.md
+.DS_Store
+*.iml
+.idea/
+*.class
+*.log
+dependency-reduced-pom.xml
+

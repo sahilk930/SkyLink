@@ -1,0 +1,10 @@
+com\skylink\BookingManager$BookingResult.class
+com\skylink\SeatDTO.class
+com\skylink\FlightDTO.class
+com\skylink\SkyLinkApp.class
+com\skylink\SkyLinkServer.class
+com\skylink\BookingManager.class
+com\skylink\BookingManager$BookingRequest.class
+com\skylink\Booking.class
+com\skylink\Seat.class
+com\skylink\Flight.class

@@ -1,7 +1,12 @@
 package com.skylink;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 public class BookingManager {
@@ -56,6 +61,8 @@ public class BookingManager {
             if (seat.book(request.passengerName())) {
                 Booking booking = new Booking(flight.getFlightNumber(), seat.getSeatNumber(), request.passengerName());
                 bookings.put(booking.getBookingId(), booking);
+                // persist booking
+                Database.insertBooking(booking);
                 return new BookingResult(true, "Booking successful", booking);
             } else {
                 return new BookingResult(false, "Seat already booked", null);
@@ -79,10 +86,29 @@ public class BookingManager {
         synchronized (seat) {
             if (seat.cancel()) {
                 bookings.remove(bookingId);
+                // mark cancelled in DB
+                Database.markCancelled(bookingId);
                 return true;
             }
         }
         return false;
+    }
+
+    public void loadFromDatabase() {
+        try {
+            for (Booking b : Database.loadBookings()) {
+                bookings.put(b.getBookingId(), b);
+                Flight f = flights.get(b.getFlightNumber());
+                if (f != null) {
+                    Seat s = f.getSeat(b.getSeatNumber());
+                    if (s != null) {
+                        s.book(b.getPassengerName());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Booking getBooking(String bookingId) {

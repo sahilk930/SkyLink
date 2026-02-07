@@ -1,9 +1,23 @@
 package com.skylink;
 
-import static spark.Spark.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.util.*;
+
+import static spark.Spark.before;
+import static spark.Spark.delete;
+import static spark.Spark.get;
+import static spark.Spark.options;
+import static spark.Spark.port;
+import static spark.Spark.post;
+import static spark.Spark.staticFiles;
 
 public class SkyLinkServer {
     private static final BookingManager manager = new BookingManager();
@@ -12,7 +26,23 @@ public class SkyLinkServer {
             .create();
 
     public static void main(String[] args) {
+        // Initialize database first (reads env vars: DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS)
+        try {
+            Database.initFromEnv();
+        } catch (Exception e) {
+            System.err.println("Warning: could not initialize database: " + e.getMessage());
+            e.printStackTrace();
+        }
+
         initializeFlights();
+
+        // load persisted bookings and apply to in-memory seats
+        try {
+            manager.loadFromDatabase();
+        } catch (Exception e) {
+            System.err.println("Warning: could not load bookings from database: " + e.getMessage());
+            e.printStackTrace();
+        }
 
         String port = System.getenv("PORT");
         if (port != null) {
@@ -187,7 +217,12 @@ public class SkyLinkServer {
             }
         }
         
-        createDummyBookings(rand);
+        String skipDummy = System.getenv("SKIP_DUMMY");
+        if (skipDummy == null || !skipDummy.equalsIgnoreCase("true")) {
+            createDummyBookings(rand);
+        } else {
+            System.out.println("SKIP_DUMMY=true — skipping creation of large dummy bookings");
+        }
     }
     
     private static void createDummyBookings(Random rand) {

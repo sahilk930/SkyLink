@@ -229,3 +229,7 @@ MIT License
 This is a portfolio project. Feel free to fork, star, or use as a reference.
 
 Built with ❤️ for showcasing full-stack Java development skills
+
+---
+
+**📚 Final Year Project** - Submitted as a comprehensive demonstration of full-stack Java development capabilities.
